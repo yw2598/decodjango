@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>产品配置</title>
+</head>
+<body>
+    <h1>配置产品</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">提交</button>
+    </form>
+
+    <script>
+        // 获取一级配置选择框的元素
+        document.getElementById("id_primary_configuration").addEventListener('change', function() {
+            var primaryConfigId = this.value;  // 获取选择的一级配置 ID
+            var secondaryConfigSelect = document.getElementById("id_secondary_configuration");
+
+            // 通过 Ajax 请求更新二级配置选项
+            fetch('/deco_select/get_secondary_configurations/' + primaryConfigId)
+                .then(response => response.json())
+                .then(data => {
+                    // 清空现有的二级配置选项
+                    secondaryConfigSelect.innerHTML = '';
+                    
+                    // 将返回的二级配置添加到选择框中
+                    data.forEach(function(item) {
+                        var option = document.createElement("option");
+                        option.value = item.id;
+                        option.text = item.name;
+                        secondaryConfigSelect.appendChild(option);
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
