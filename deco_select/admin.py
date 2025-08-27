@@ -5,9 +5,11 @@ from .models import StaticAsset,COP
 from django_json_widget.widgets import JSONEditorWidget
 from django.db import models
 
+from .models import UserSelection
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'model_number', 'product_type','preset', 'main_image','cop')
+    list_display = ('id', 'model_number', 'product_type','style','preset', 'main_image','cop')
     search_fields = ('model_number', 'product_type')
     formfield_overrides = {
         models.JSONField: {'widget': JSONEditorWidget},
@@ -21,7 +23,11 @@ class ProductAdmin(admin.ModelAdmin):
                 'preset',         # ← 加在这里
                 'default',    
                 'cop',      
-                'configurations'
+                'ceiling',
+                'side_wall',
+                'rear_wall',
+                'floor',
+                'front_wall'
             )
         }),
         ('图片', {
@@ -45,3 +51,11 @@ class StaticAssetAdmin(admin.ModelAdmin):
 class COPAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'image')
     search_fields = ('name',)
+
+
+@admin.register(UserSelection)
+class UserSelectionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user_id', 'product_id','snapshot_model_number', 'timestamp')  # 列表页显示哪些字段
+    list_filter = ('user_id', 'product_id')  # 右侧过滤器
+    search_fields = ('user_id', 'product_id')  # 搜索框
+    ordering = ('-timestamp',)  # 默认按时间倒序

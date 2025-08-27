@@ -14,7 +14,13 @@ class Product(models.Model):
     style = models.CharField(max_length=100, blank=True, null=True, verbose_name="风格")  # 新增字段
     preset = models.CharField(max_length=100,blank=False,null=False,default="标配",verbose_name="预设配置")
     default = models.BooleanField(default=False, verbose_name="是否默认型号配置")
-    configurations = models.JSONField(default=list, blank=True, verbose_name="产品配置")
+
+    ceiling = models.CharField(max_length=255, blank=True, null=True, verbose_name="吊顶")
+    side_wall = models.CharField(max_length=255, blank=True, null=True, verbose_name="侧壁")
+    rear_wall = models.CharField(max_length=255, blank=True, null=True, verbose_name="后壁")
+    floor = models.CharField(max_length=255, blank=True, null=True, verbose_name="地坪")
+    front_wall = models.CharField(max_length=255, blank=True, null=True, verbose_name="前壁")
+
     cop = models.ForeignKey('COP',on_delete=models.SET_NULL,blank=True,null=True,verbose_name="操纵箱（COP）")
     main_image = models.ImageField(upload_to=product_image_upload_path, blank=True, null=True, verbose_name="主图")
     detail_image_1 = models.ImageField(upload_to=product_image_upload_path, blank=True, null=True, verbose_name="细节图1")
@@ -44,3 +50,33 @@ class COP(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class UserSelection(models.Model):
+    user_id = models.IntegerField(verbose_name="用户ID", db_index=True)
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="选择时间", db_index=True)
+
+    # 只保留一个 product 字段！先允许可空，迁移后回填再改非空
+    product = models.ForeignKey(
+        'Product',
+        on_delete=models.PROTECT,
+        verbose_name="产品",
+        db_index=True,
+        null=True,
+        blank=True,
+    )
+
+    # 快照字段，先允许可空，回填后可再改为非空
+    snapshot_model_number = models.CharField(max_length=100, null=True, blank=True, verbose_name="快照-型号")
+    snapshot_product_type = models.CharField(max_length=100, null=True, blank=True, verbose_name="快照-梯型")
+    snapshot_style = models.CharField(max_length=100, null=True, blank=True, verbose_name="快照-风格")
+    snapshot_preset = models.CharField(max_length=100, null=True, blank=True, verbose_name="快照-预设配置")
+    snapshot_default = models.BooleanField(default=False, verbose_name="快照-是否默认")
+
+    class Meta:
+        verbose_name = "用户选配记录"
+        verbose_name_plural = "用户选配记录"
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"User {self.user_id} -> Product {self.product_id} @ {self.timestamp:%Y-%m-%d %H:%M:%S}"
