@@ -129,3 +129,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+WECHAT_APPID = "wx637ff335bbb60fc8"
+WECHAT_SECRET = "6604f55a638502c0320d67ed80cf53f2"

@@ -4,7 +4,7 @@ from .models import StaticAsset,COP
 # 需要先安装 django-json-widget：pip install django-json-widget
 from django_json_widget.widgets import JSONEditorWidget
 from django.db import models
-
+from .models import WechatUser
 from .models import UserSelection
 
 @admin.register(Product)
@@ -59,3 +59,9 @@ class UserSelectionAdmin(admin.ModelAdmin):
     list_filter = ('user_id', 'product_id')  # 右侧过滤器
     search_fields = ('user_id', 'product_id')  # 搜索框
     ordering = ('-timestamp',)  # 默认按时间倒序
+
+@admin.register(WechatUser)
+class WechatUserAdmin(admin.ModelAdmin):
+    list_display = ("id", "username", "phone_number", "openid", "created_at")
+    search_fields = ("username", "phone_number", "openid")
+    list_filter = ("created_at",)

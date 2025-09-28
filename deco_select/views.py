@@ -4,10 +4,14 @@ from .models import Product,UserSelection
 from .forms import ProductForm
 from datetime import datetime,timedelta
 # --------- DRF 相关导入 ----------
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from .serializers import ProductSerializer  # 注意：文件名是 serializer.py
-
+from django.views.decorators.csrf import csrf_exempt
+from .utils import login_by_code, register_user
+import json
+from django.http import JsonResponse
 # ========== 主页 ==========
 def home(request):
     return render(request, 'deco_select/home.html')  # home.html 请确保存在
@@ -322,3 +326,54 @@ def user_selection_top_products(request):
             "items": items
         }
     }, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    """
+    登录接口：
+    前端传 code (wx.login)，后端换 openid 并查数据库
+    """
+    if request.method != "POST":
+        return JsonResponse({"success": False, "msg": "仅支持 POST"})
+
+    try:
+        body = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"success": False, "msg": "请求体不是合法 JSON"})
+
+    code = body.get("code")
+    if not code:
+        return JsonResponse({"success": False, "msg": "缺少 code 参数"})
+
+    result = login_by_code(code)
+    return JsonResponse(result)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_view(request):
+    """
+    注册接口：
+    前端传 code (wx.login) + phone_code (wx.getPhoneNumber) + username
+    后端解密并写入数据库
+    """
+    if request.method != "POST":
+        return JsonResponse({"success": False, "msg": "仅支持 POST"})
+
+    try:
+        body = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"success": False, "msg": "请求体不是合法 JSON"})
+
+    code = body.get("code")
+    phone_code = body.get("phone_code")
+    username = body.get("username", "未命名用户")
+
+    if not code or not phone_code:
+        return JsonResponse({"success": False, "msg": "缺少 code 或 phone_code"})
+
+    result = register_user(code, phone_code, username)
+    return JsonResponse(result)
